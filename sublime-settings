@@ -1,0 +1,11 @@
+{
+	"vintage_start_in_command_mode": true,
+	"vintage_use_clipboard": true,
+	"vintage_ctrl_keys": true,
+	"relative_line_numbers": true,
+	"ignored_packages": [],
+	"rulers": [90],
+	"wrap_width": 90,
+	"translate_tabs_to_spaces": true,
+	"wrap_width_style": "min"
+}
