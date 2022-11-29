@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+import os
+from datetime import datetime
+
+# TODO: Add syntax checking/fixing to cleanup new-line characters/extra spaces.
+
+DAILY_NOTES = """\
+ ______   _______  ___   ___      __   __    __    _  _______  _______  _______  _______ 
+|      | |   _   ||   | |   |    |  | |  |  |  |  | ||       ||       ||       ||       |
+|  _    ||  |_|  ||   | |   |    |  |_|  |  |   |_| ||   _   ||_     _||    ___||  _____|
+| | |   ||       ||   | |   |    |       |  |       ||  | |  |  |   |  |   |___ | |_____ 
+| |_|   ||       ||   | |   |___ |_     _|  |  _    ||  |_|  |  |   |  |    ___||_____  |
+|       ||   _   ||   | |       |  |   |    | | |   ||       |  |   |  |   |___  _____| |
+|______| |__| |__||__| |_______|  |___|    |_|  |__||_______|  |___|  |_______||_______|
+-----------------------------------------------------------------------------------------\
+"""
+
+DAY_TEMPLATE = """
+-----------------------------------------------------------------------------------------
+>>> Day {date}
+    -------------------------------------------------------------------------------------
+    >> Notes
+        [Notes]
+    -------------------------------------------------------------------------------------
+    >> Meeting Notes
+        > [Meeting Title]
+            [Meeting Notes]
+-----------------------------------------------------------------------------------------
+"""
+
+
+def main():
+    # Check on sublime
+    subl = os.path.abspath("/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl")
+    if not os.path.exists(subl):
+        print("Sublime text not found.")
+        exit()
+    todays_date = datetime.now().strftime("%m/%d/%Y")
+    # Ensure path to notes exists
+    path = os.path.expanduser("~/Notes/DailyNotes")
+    os.makedirs(path, exist_ok=True)
+
+    # Check for this year's notes
+    file_name = "daily_notes_{}.txt".format(datetime.now().year)
+    full_path = "{}/{}".format(path, file_name)
+    if not os.path.exists(full_path):
+        # Create this year's file:
+        with open(full_path, 'w+') as note_file:
+            # add header
+            note_file.write(DAILY_NOTES)
+
+    # Open file and check for today's date
+    with open(full_path, "r") as note_file:
+        contents = note_file.read()
+        today_exists = ">>> Day {}".format(todays_date) in contents
+        # Check for new-line.
+        new_line = contents.endswith("\n")
+
+    # if today's date is not present:
+    if not today_exists:
+        with open(full_path, 'a') as note_file:
+            if not new_line:
+                note_file.write("\n")
+            note_file.write(DAY_TEMPLATE.format(date=todays_date))
+
+    # Open the file with sublime
+    open_command = '"{}" {}'.format(subl, full_path)
+    os.system(open_command)
+
+
+if __name__ == "__main__":
+    main()

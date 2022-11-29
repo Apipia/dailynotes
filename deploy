@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cp ./dailynotes "$HOME/.local/bin"
+chmod +x "$HOME/.local/bin/dailynotes"
