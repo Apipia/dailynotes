@@ -31,6 +31,7 @@ DAY_TEMPLATE = """
 
 
 def main():
+    last_line = 0
     # Check on sublime
     subl = os.path.abspath("/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl")
     if not os.path.exists(subl):
@@ -50,23 +51,52 @@ def main():
             # add header
             note_file.write(DAILY_NOTES)
 
-    # Open file and check for today's date
+    # Open file and read lines
     with open(full_path, "r") as note_file:
-        contents = note_file.read()
-        today_exists = ">>> Day {}".format(todays_date) in contents
-        # Check for new-line.
-        new_line = contents.endswith("\n")
+        contents = note_file.readlines()
+    # Check for the date, start at the end
+    for index in range(len(contents)-1, 0, -1):
+        if ">>> Day {}".format(todays_date) in contents[index]:
+            today_exists = True
+            today_line_no = index+2
+            break
+    else:
+        today_exists = False
+
+    # Check for new-line.
+    new_line = contents[len(contents)-1].endswith("\n")
+
+    # Find and remove any consecutive new-lines
+    indices_to_remove = []
+    for index in range(0, len(contents)):
+        # if the current line is just a \n
+        if contents[index] == "\n" and contents[index+1] == "\n":
+            indices_to_remove.append(index)
+
+    # Removing extra new-line whitespaces
+    print("Indices to remove: {}".format(indices_to_remove))
+    indices_to_remove = sorted(indices_to_remove, reverse=True)
+    for index in indices_to_remove:
+        contents.pop(index)
 
     # if today's date is not present:
-    if not today_exists:
-        with open(full_path, 'a') as note_file:
-            if not new_line:
-                note_file.write("\n")
+    with open(full_path, 'w') as note_file:
+        note_file.writelines(contents)
+        if not new_line:
+            note_file.write("\n")
+        if not today_exists:
             note_file.write(DAY_TEMPLATE.format(date=todays_date))
+            today_line_no = len(contents) + 4
 
-    # Open the file with sublime
-    open_command = '"{}" {}'.format(subl, full_path)
+    # Open the file with sublime to the correct line_no
+    open_command = f'"{subl}" {full_path}:{today_line_no}'
+    # fold all days
+    fold_command = f"'{subl}' --command 'fold_by_level {{\"level\": 1}}'"
+    # Unfold today
+    unfold_command = f"'{subl}' --command 'unfold'"
     os.system(open_command)
+    os.system(fold_command)
+    os.system(unfold_command)
 
 
 if __name__ == "__main__":
